@@ -36,9 +36,7 @@ generaListaRandoms(Cont, Xi, Hasta, [PrimerNumero|LR2]):-
 	generaListaRandoms(ContMenos1, Xi1, Hasta, LR2),
 	PrimerNumero is Xi1 mod Hasta.
 
-%generarCarta(Elements,CantElement,[PrimerElemento|LAux]):-
-	%not(CantElement = 0),
-	%myRandom() 
+
 
 
 
@@ -46,28 +44,29 @@ generaListaRandoms(Cont, Xi, Hasta, [PrimerNumero|LR2]):-
 long([],0).
 long([_|Y],S):-long(Y,T), S is T + 1.
 
-generarFirstCard(_,0,[]).
 
-generarFirstCard(ListaElement,CantElement,N,[Element|Carta]):-
+generarFirstCard(_,0,_,[]):-!.
+generarFirstCard(ListaElement,CantElement,N,[U|Carta]):-
 	not(CantElement = 0),
 	CantElementMenos1 is CantElement -1,
+	elementoN(ListaElement,N,U),
 	M is N + 1,
 	generarFirstCard(ListaElement,CantElementMenos1,M,Carta),
-	Element is elementoN(ListaElement,N,).
+	!.
 
-%generarFirstCard([PrimerElemento|RestoElementos],CantElement,[Element|Carta]):-
-	%not(CantElement = 0),
-	%CantElementMenos1 is CantElement -1,
-	%generarFirstCard(RestoElementos,CantElementMenos1,Carta),
-	%Element is PrimerElemento.
+generarNCard(_,0,_,)
+generarNCard(ListaElement,CantElement,K,[U|Cartas]):
+	not(CantElement = 0),
+	M is K +1,
+	
 
 
-elementoN([],0,_):-!.
 elementoN([X|_],0,X).
 elementoN([_|Y],Cont,U):-
 	not(Cont = 0),
 	ContMenos1 is Cont -1,
-	elementoN(Y,ContMenos1,U).
+	elementoN(Y,ContMenos1,U),
+	!.
 
 % Carta enesima
 %cardsSetNthCard([],N,[]):-!.
