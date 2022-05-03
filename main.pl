@@ -54,16 +54,40 @@ generarFirstCard(ListaElement,CantElement,N,[U|Carta]):-
 	generarFirstCard(ListaElement,CantElementMenos1,M,Carta),
 	!.
 
-generarNCard(_,0,_,)
-generarNCard(ListaElement,CantElement,K,[U|Cartas]):
+
+generarNCard(_,0,_,_,_,[]).
+generarNCard(ListaElement,CantElement,I,J,K,[U|Carta]):-
+	CantElement = I,
+	CantElementMenos1 is CantElement -1,
+	elementoN(ListaElement,K,U),
+	generarNCard(ListaElement,CantElementMenos1,I,J,K,Carta),
+	!.
+generarNCard(ListaElement,CantElement,I,J,K,[U|Carta]):-
 	not(CantElement = 0),
+	not(CantElement = I),
+	CantElementMenos1 is CantElement -1,
 	M is K +1,
-	
+	L is I -1,
+	H is L * J + M,
+	elementoN(ListaElement,H,U),
+	generarNCard(ListaElement,CantElementMenos1,I,J,M,Carta).
 
 
-elementoN([X|_],0,X).
+generarNCartas(_,0,_,_,_,[]).
+generarNCartas(ListaElement,CantCartas,I,J,K,[Card|Cartas]):-
+    not(CantCartas = 0),
+    generarNCard(ListaElement,I,I,J,K,Card),
+	CantCartasMenos1 is CantCartas -1,
+	M is J +1,
+    generarNCartas(ListaElement,CantCartasMenos1,I,M,K,Cartas),
+    !.
+
+
+
+
+elementoN([X|_],1,X).
 elementoN([_|Y],Cont,U):-
-	not(Cont = 0),
+	not(Cont = 1),
 	ContMenos1 is Cont -1,
 	elementoN(Y,ContMenos1,U),
 	!.
