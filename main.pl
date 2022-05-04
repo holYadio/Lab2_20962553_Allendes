@@ -73,6 +73,25 @@ generarNCard(ListaElement,CantElement,I,J,K,[U|Carta]):-
 	generarNCard(ListaElement,CantElementMenos1,I,J,M,Carta).
 
 
+generarN2Card(_,0,_,_,_,_,[]).
+generarN2Card(ListaElement,CantElement,O,I,J,K,[U|Carta]):-
+	CantElement = O,
+	CantElementMenos1 is CantElement -1,
+	T is I +1,
+	elementoN(ListaElement,T,U),
+	generarN2Card(ListaElement,CantElementMenos1,O,I,J,K,Carta),
+	!.
+generarN2Card(ListaElement,CantElement,O,I,J,K,[U|Carta]):-
+	not(CantElement = 0),
+	not(CantElement = O),
+	CantElementMenos1 is CantElement -1,
+	M is K +1,
+	L is I -1,
+	H is ((O - 1) + 2 + ((O - 1) * (K - 1)) + (((L * (K - 1)) + J - 1) mod (O - 1))),
+	elementoN(ListaElement,H,U),
+	generarN2Card(ListaElement,CantElementMenos1,O,I,J,M,Carta).
+
+
 generarNCartas(_,0,_,_,_,[]).
 generarNCartas(ListaElement,CantCartas,I,J,K,[Card|Cartas]):-
     not(CantCartas = 0),
@@ -82,7 +101,41 @@ generarNCartas(ListaElement,CantCartas,I,J,K,[Card|Cartas]):-
     generarNCartas(ListaElement,CantCartasMenos1,I,M,K,Cartas),
     !.
 
+generarN2Cartas(_,0,_,_,_,_,[]).
+generarN2Cartas(ListaElement,CantCartas,O,I,J,K,[Card|Cartas]):-
+    not(CantCartas = 0),
+    generarN2Card(ListaElement,O,O,I,J,K,Card),
+	CantCartasMenos1 is CantCartas -1,
+	M is J +1,
+    generarN2Cartas(ListaElement,CantCartasMenos1,O,I,M,K,Cartas),
+    !.
 
+
+join( [], Lista, Lista ).
+join( [CabezaL1|RestoL1], Lista2, [CabezaL1|ListaResultado] ) :-
+	join( RestoL1, Lista2, ListaResultado ).
+
+
+generarN3Cartas(_,0,_,_,_,_,_,[]).
+generarN3Cartas(ListaElement,CantCartas,G,O,I,J,K,[Cards|Cartas]):-
+    not(CantCartas = 0),
+    generarN2Cartas(ListaElement,G,O,I,J,K,Cards),
+	CantCartasMenos1 is CantCartas -1,
+	M is I +1,
+    generarN3Cartas(ListaElement,CantCartasMenos1,G,O,M,J,K,Cartas),
+    !.
+
+
+mazoNCartas(ListaElement,CantElement,[FisrtCard|Cards]):-
+	CantCartas is CantElement -1,
+	generarFirstCard(ListaElement,CantElement,1,FisrtCard),
+	generarNCartas(ListaElement,CantCartas,CantElement,1,1,Cards).
+
+
+mazoN2Cartas(ListaElement,CantElement,[NCards|Cards]):-
+	CantCartas is CantElement -1,
+	mazoNCartas(ListaElement,CantElement,NCards),
+	generarN3Cartas(ListaElement,CantCartas,CantCartas,CantElement,1,1,1,Cards).
 
 
 elementoN([X|_],1,X).
