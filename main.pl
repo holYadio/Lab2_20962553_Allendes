@@ -17,40 +17,29 @@
 %cardsSet(Elements, NumElementos, MaxC, Seed, CS).
 
 
-myRandom(Xn, Xn1):-
-	AX is 1103515245 * Xn,
-	AXC is AX + 12345,
-	Xn1 is (AXC mod 2147483647).
-
-
 cardsSet(_,0,_,_,[]).
-%cardsSet(Elements, NumElementos, MaxC, Seed, [Card|RestCard]):-
-%	not(NumElementos = 0),
-	
-
-generaListaRandoms(0, _, _, []).
-generaListaRandoms(Cont, Xi, Hasta, [PrimerNumero|LR2]):-
-	not(Cont = 0),
-	myRandom(Xi, Xi1),
-	ContMenos1 is Cont -1,
-	generaListaRandoms(ContMenos1, Xi1, Hasta, LR2),
-	PrimerNumero is Xi1 mod Hasta.
-
-
-
+cardsSet(Elements, NumE, MaxC, _, CS):-
+	not(NumE = 0),
+	not(var(MaxC)),
+	mazoCartas(Elements,NumE,Mazo),
+	acotarMazo(Mazo,MaxC,CS),
+	!.
+cardsSet(Elements, NumE, MaxC, _, CS):-
+	not(NumE = 0),
+	var(MaxC),
+	mazoCartas(Elements,NumE,CS),
+	length(CS, MaxC),
+	!.
 
 
-% Calcula longuitud de la lista
-long([],0).
-long([_|Y],S):-long(Y,T), S is T + 1.
-
+%----------------------- Funciones para construir el CardsSet -----------------------%
 
 generarFirstCard(_,0,_,[]):-!.
-generarFirstCard(ListaElement,CantElement,N,[U|Carta]):-
+generarFirstCard(ListaElement,CantElement,K,[U|Carta]):-
 	not(CantElement = 0),
 	CantElementMenos1 is CantElement -1,
-	elementoN(ListaElement,N,U),
-	M is N + 1,
+	elementoN(ListaElement,K,U),
+	M is K + 1,
 	generarFirstCard(ListaElement,CantElementMenos1,M,Carta),
 	!.
 
@@ -101,6 +90,7 @@ generarNCartas(ListaElement,CantCartas,I,J,K,[Card|Cartas]):-
     generarNCartas(ListaElement,CantCartasMenos1,I,M,K,Cartas),
     !.
 
+
 generarN2Cartas(_,0,_,_,_,_,[]).
 generarN2Cartas(ListaElement,CantCartas,O,I,J,K,[Card|Cartas]):-
     not(CantCartas = 0),
@@ -111,19 +101,15 @@ generarN2Cartas(ListaElement,CantCartas,O,I,J,K,[Card|Cartas]):-
     !.
 
 
-join( [], Lista, Lista ).
-join( [CabezaL1|RestoL1], Lista2, [CabezaL1|ListaResultado] ) :-
-	join( RestoL1, Lista2, ListaResultado ).
-
-
 generarN3Cartas(_,0,_,_,_,_,_,[]).
-generarN3Cartas(ListaElement,CantCartas,G,O,I,J,K,[Cards|Cartas]):-
-    not(CantCartas = 0),
-    generarN2Cartas(ListaElement,G,O,I,J,K,Cards),
+generarN3Cartas(ListaElement,CantCartas,G,O,I,J,K,X):-
+	not(CantCartas = 0),
 	CantCartasMenos1 is CantCartas -1,
+	generarN2Cartas(ListaElement,G,O,I,J,K,Cards),
+	append(Cards,Cartas,X),
 	M is I +1,
-    generarN3Cartas(ListaElement,CantCartasMenos1,G,O,M,J,K,Cartas),
-    !.
+	generarN3Cartas(ListaElement,CantCartasMenos1,G,O,M,J,K,Cartas),
+	!.
 
 
 mazoNCartas(ListaElement,CantElement,[FisrtCard|Cards]):-
@@ -132,10 +118,18 @@ mazoNCartas(ListaElement,CantElement,[FisrtCard|Cards]):-
 	generarNCartas(ListaElement,CantCartas,CantElement,1,1,Cards).
 
 
-mazoN2Cartas(ListaElement,CantElement,[NCards|Cards]):-
+mazoCartas(ListaElement,CantElement,Cartas):-
 	CantCartas is CantElement -1,
-	mazoNCartas(ListaElement,CantElement,NCards),
-	generarN3Cartas(ListaElement,CantCartas,CantCartas,CantElement,1,1,1,Cards).
+	mazoNCartas(ListaElement,CantElement,CardsN),
+	generarN3Cartas(ListaElement,CantCartas,CantCartas,CantElement,1,1,1,OtherCards),
+	append(CardsN,OtherCards,Cartas).
+
+
+cardSetDeleteCard([_|X], 0, X).
+cardSetDeleteCard([X|T1], I, [X|T2]):-
+	I2 is I - 1,
+	cardSetDeleteCard(T1, I2, T2),
+	!.
 
 
 elementoN([X|_],1,X).
@@ -145,9 +139,28 @@ elementoN([_|Y],Cont,U):-
 	elementoN(Y,ContMenos1,U),
 	!.
 
+
+acotarMazo(_,0,[]).
+acotarMazo(Mazo,CantCartas,[Card|MazoAcotado]):-
+	not(CantCartas = 0),
+	CantCartasMenos1 is CantCartas -1,
+	cardSetDeleteCard(Mazo,0,NewMazo),
+	elementoN(Mazo,1,Card),
+	acotarMazo(NewMazo,CantCartasMenos1,MazoAcotado),
+	!.
+
+%------------------------------------------------------------------------------------%
 % Carta enesima
-%cardsSetNthCard([],N,[]):-!.
-%cardsSetNthCard[X|N],1,X):-!.
-%cardsSetNthCard([X|R],N,S):-
-	%M is N - 1,
-	%cardsSetNthCard(R,M,S).
+
+/*
+
+	Documentacion.
+
+*/
+
+cardsSetNthCard([],_,[]):-!.
+cardsSetNthCard([X|_],0,X):-!.
+cardsSetNthCard([_|R],N,S):-
+	M is N - 1,
+	cardsSetNthCard(R,M,S),
+	!.
