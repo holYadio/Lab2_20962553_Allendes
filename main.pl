@@ -13,11 +13,15 @@
 
 % Predicados:
 % caso base:
-
+% set_prolog_flag(answer_write_options,[max_depth(0)]).
 %cardsSet(Elements, NumElementos, MaxC, Seed, CS).
+/*
+
+	Documentacion.
+
+*/
 
 
-cardsSet(_,0,_,_,[]).
 cardsSet(Elements, NumE, MaxC, _, CS):-
 	not(NumE = 0),
 	not(var(MaxC)),
@@ -148,6 +152,49 @@ acotarMazo(Mazo,CantCartas,[Card|MazoAcotado]):-
 	elementoN(Mazo,1,Card),
 	acotarMazo(NewMazo,CantCartasMenos1,MazoAcotado),
 	!.
+%------------------------------------------------------------------------------------%
+% cardsSetIsDobble
+
+/*
+
+	Documentacion.
+
+*/
+
+cardsSetIsDobble(CS):-
+	length(CS,A),
+	noRepetido2(CS,A,1).
+	
+
+noRepetido(_,_,1,_,A):-
+	A =< 1,
+	!.
+noRepetido(CS,Card1,CantCartas,I,A):-
+	not(CantCartas = 1),
+	A =< 1,
+	M is I + 1,
+	elementoN(CS,I,Card2),
+	intersection(Card1, Card2, InterCardMazo),
+	length(InterCardMazo,A),
+	CantCartasMenos1 is CantCartas -1,
+	noRepetido(CS,Card1, CantCartasMenos1, M, A),
+	!.
+
+noRepetido2(_,1,A):-
+	not(A =< 1),
+	false.
+noRepetido2(_,1,A):-
+	A =< 1.
+noRepetido2(CS,CantCartas,A):-
+	not(CantCartas = 1),
+	A =< 1,
+	CantCartasMenos1 is CantCartas -1,
+	elementoN(CS,1,Card),
+	cardSetDeleteCard(CS,0,NewCS),
+	noRepetido(NewCS,Card,CantCartasMenos1,1,A),
+	noRepetido2(NewCS, CantCartasMenos1, A),
+	!.
+
 
 %------------------------------------------------------------------------------------%
 % Carta enesima
@@ -163,4 +210,59 @@ cardsSetNthCard([X|_],0,X):-!.
 cardsSetNthCard([_|R],N,S):-
 	M is N - 1,
 	cardsSetNthCard(R,M,S),
+	!.
+
+
+
+
+%------------------------------------------------------------------------------------%
+% cardsSetFindTotalCards
+
+/*
+
+	Documentacion.
+
+*/
+cardsSetFindTotalCards(Card,TC):-
+	length(Card,A),
+	TC is (((A - 1) * (A - 1)) + (A - 1) + 1).
+
+
+%------------------------------------------------------------------------------------%
+% cardsSetToString
+
+/*
+
+	Documentacion.
+
+*/
+/*
+
+cardsSetToString([],_):-
+	!.
+cardsSetToString([Card|Resto],String):-
+	string_concat()
+
+	Documentacion.
+
+*/
+
+stringCarta(Card,I,String4):-
+	atomic_list_concat(Card, " ", StringCard),
+	number_string(I, StringI),
+	string_concat('Carta ',StringI,String1),
+	string_concat(String1,': ',String2),
+	string_concat(String2,StringCard,String3),
+	string_concat(String3,'\n',String4).
+
+stringCS(_,_,'',0):-!.
+stringCS(CS,I,StringFinal,CantCartas):-
+	not(CantCartas = 0),
+	M is I + 1,
+	CantCartasMenos1 is CantCartas - 1,
+	elementoN(CS,1,Card),
+	cardSetDeleteCard(CS,0,NewCS),
+	stringCarta(Card,I,StringCard),
+	string_concat(StringCard,StringResto,StringFinal),
+	stringCS(NewCS, M, StringResto,CantCartasMenos1),
 	!.
