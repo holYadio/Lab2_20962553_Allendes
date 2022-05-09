@@ -1,3 +1,5 @@
+%------------------------------------------------------------------------------------%
+%------------------------------------------------------------------------------------%
 /* TDA cardsSet: [Id, Author, Date, Text, Votes, Status, Labels]).
  * 
  * Por defecto: 
@@ -34,6 +36,11 @@ cardsSet(Elements, NumE, MaxC, _, CS):-
 	mazoCartas(Elements,NumE,CS),
 	length(CS, MaxC),
 	!.
+
+
+% Ejemplos:
+% call: cardsSet([1,2,3,4,5,6,7,8,9,10,11,12,13],4,A,1,CS
+%
 
 
 %----------------------- Funciones para construir el CardsSet -----------------------%
@@ -171,6 +178,7 @@ noRepetido(_,_,1,_,A):-
 	!.
 noRepetido(CS,Card1,CantCartas,I,A):-
 	not(CantCartas = 1),
+	not(var(Card1)),
 	A =< 1,
 	M is I + 1,
 	elementoN(CS,I,Card2),
@@ -236,16 +244,6 @@ cardsSetFindTotalCards(Card,TC):-
 	Documentacion.
 
 */
-/*
-
-cardsSetToString([],_):-
-	!.
-cardsSetToString([Card|Resto],String):-
-	string_concat()
-
-	Documentacion.
-
-*/
 
 stringCarta(Card,I,String4):-
 	atomic_list_concat(Card, " ", StringCard),
@@ -255,7 +253,7 @@ stringCarta(Card,I,String4):-
 	string_concat(String2,StringCard,String3),
 	string_concat(String3,'\n',String4).
 
-stringCS(_,_,'',0):-!.
+stringCS([],_,'',_):-!.
 stringCS(CS,I,StringFinal,CantCartas):-
 	not(CantCartas = 0),
 	M is I + 1,
@@ -263,6 +261,74 @@ stringCS(CS,I,StringFinal,CantCartas):-
 	elementoN(CS,1,Card),
 	cardSetDeleteCard(CS,0,NewCS),
 	stringCarta(Card,I,StringCard),
-	string_concat(StringCard,StringResto,StringFinal),
 	stringCS(NewCS, M, StringResto,CantCartasMenos1),
+	string_concat(StringCard,StringResto,StringFinal),
+	!.
+
+
+
+
+
+%------------------------------------------------------------------------------------%
+%------------------------------------------------------------------------------------%
+/* TDA game: [numPlayers(int), CS(cardsSet), Mode(str), seed(int), DG(Game)]).
+ * 
+ * Por defecto: 
+ * 	Una nueva pregunta se agrega con el estado "abierta" (estado="abierta")
+ * 	Una nueva pregunta se agrega con 0 votos (votos=0)
+ * Meta primaria:
+ * 	cardsSet(Elements, NumElementos, MaxC, Seed, CS).
+ * Metas secundarias: 
+ * 	addQuestion (CurrentQuestions, Author, Date, Text, Labels, UpdatedQuestions).  
+ *  validateQuestionId(CurrentQuestions, QuestionId).
+ * 
+*/
+
+dobbleGame(NumPlayers,CS,Mode,[NumPlayers,CS,Mode,[1,[]],[]]).
+
+% Selectores:
+getNumPlayers([NumPlayers|_],NumPlayers).
+getCardsSet([_,CS,_,_,_],CS).
+getMode([_,_,Mode,_,_],Mode).
+getTurnPlayer([_,_,_,[TurnoJugador,_],_],TurnoJugador).
+getListPlayer([_,_,_,[_,ListPlayer],_],ListPlayer).
+getMazoPlayers([_,_,_,_,MazoPlayers],MazoPlayers).
+
+
+%------------------------------------------------------------------------------------%
+% dobbleGameRegister
+/*
+	Documentacion.
+*/
+dobbleGameRegister(User,DGIn,DGOut):-
+	getNumPlayers(DGIn,NPlayers),
+	getCardsSet(DGIn,CS),
+	getMode(DGIn,Mode),
+	getTurnPlayer(DGIn,TP),
+	getListPlayer(DGIn,ListPlayer),
+	getMazoPlayers(DGIn,MazoPlayers),
+	not(member(User, ListPlayer)),
+	append(ListPlayer,[User],LP),
+	append(MazoPlayers,[],MP),
+	DGOut = [NPlayers,CS,Mode,[TP,LP],MP],!.
+
+% Ejemplos
+% Se registra 1 usuario.
+% cardsSet(['a','b','c','d','e','f','g','h','i','j','k','l','m'],4,A,1,CS),dobbleGame(4,CS,'strackMode',DG),dobbleGameRegister('a',DG,DG2).
+% Se registra 2 usuarios.
+% cardsSet(['a','b','c','d','e','f','g','h','i','j','k','l','m'],4,A,1,CS),dobbleGame(4,CS,'strackMode',DG),dobbleGameRegister('a',DG,DG2),dobbleGameRegister('b',DG2,DG3).
+% ERROR: Se intenta registrar un usuario que ya existe en el juego
+% cardsSet(['a','b','c','d','e','f','g','h','i','j','k','l','m'],4,A,1,CS),dobbleGame(4,CS,'strackMode',DG),dobbleGameRegister('a',DG,DG2),dobbleGameRegister('a',DG2,DG3).
+
+%------------------------------------------------------------------------------------%
+% dobbleGameWhoseTurnIsIt
+/*
+
+	Documentacion.
+
+*/
+dobbleGameWhoseTurnIsIt(DG,User):-
+	getTurnPlayer(DG,TP),
+	getListPlayer(DG,ListPlayer),
+	elementoN(ListPlayer,TP,User),
 	!.
